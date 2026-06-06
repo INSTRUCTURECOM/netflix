@@ -56,7 +56,7 @@
             user-select: none;
         }
 
-        /* Settings Dropdown Button & Menu */
+        /* Settings Dropdown */
         .settings-container {
             position: relative;
         }
@@ -108,7 +108,7 @@
             font-weight: 500;
         }
 
-        /* Toggle Switches */
+        /* Toggle Switch */
         .switch {
             position: relative;
             display: inline-block;
@@ -661,10 +661,11 @@
             }
         });
 
+        /* --- Updated vidsrc.to Path Parameter Systems --- */
         function openPlayer(tmdbId) {
             tvControls.style.display = 'none';
-            // OPTIMIZED: Swapped mirror domain base to clear web production cross-origin filters
-            buildIframe(`https://vidsrc.me/embed/movie?tmdb=${tmdbId}`);
+            // FIXED: Using active path parameter structure for movies
+            buildIframe(`https://vidsrc.to/embed/movie/${tmdbId}`);
         }
 
         async function openTvPlayer(tvId) {
@@ -710,8 +711,8 @@
         }
 
         function loadTvEpisodeStream(s, e) {
-            // OPTIMIZED: Swapped mirror domain base to clear web production cross-origin filters
-            buildIframe(`https://vidsrc.me/embed/tv?tmdb=${activeTvId}&sea=${s}&epi=${e}`);
+            // FIXED: Using active path parameter structure for TV shows
+            buildIframe(`https://vidsrc.to/embed/tv/${activeTvId}/${s}/${e}`);
         }
 
         seasonSelect.addEventListener('change', async (e) => {
@@ -734,8 +735,8 @@
             videoPlayer.setAttribute("frameborder", "0");
             videoPlayer.setAttribute("allowfullscreen", "true");
             
-            // OPTIMIZED: Cleaned up sandbox tokens to grant token passing across vercel deployment domains
-            videoPlayer.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock");
+            // Re-optimized sandbox permissions to satisfy vidsrc.to domain walls smoothly
+            videoPlayer.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-presentation");
             videoPlayer.src = url;
             
             modalContent.appendChild(videoPlayer);
