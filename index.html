@@ -27,6 +27,7 @@
             overflow-x: hidden;
         }
 
+        /* Navbar Layout */
         header {
             display: flex;
             justify-content: space-between;
@@ -55,6 +56,7 @@
             user-select: none;
         }
 
+        /* Settings Dropdown Button & Menu */
         .settings-container {
             position: relative;
         }
@@ -86,7 +88,7 @@
             border: 1px solid #333;
             border-radius: 6px;
             padding: 15px;
-            width: 280px;
+            width: 260px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.5);
             z-index: 20;
         }
@@ -99,47 +101,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .setting-item:last-child {
-            margin-bottom: 0;
         }
 
         .setting-label {
             font-size: 0.9rem;
             font-weight: 500;
-        }
-
-        .setting-label small {
-            display: block;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            font-weight: 400;
-            margin-top: 2px;
-        }
-
-        /* Source selector */
-        .source-select {
-            background: #222;
-            color: white;
-            border: 1px solid #444;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            outline: none;
-            width: 100%;
-            margin-top: 8px;
-        }
-
-        .source-select:focus {
-            border-color: var(--primary);
-        }
-
-        .source-row {
-            display: flex;
-            flex-direction: column;
         }
 
         /* Toggle Switches */
@@ -148,7 +114,6 @@
             display: inline-block;
             width: 44px;
             height: 24px;
-            flex-shrink: 0;
         }
 
         .switch input {
@@ -189,7 +154,7 @@
             transform: translateX(20px);
         }
 
-        /* Search */
+        /* Search Autocomplete */
         .search-container {
             position: relative;
             display: inline-block;
@@ -271,7 +236,7 @@
             margin-top: 2px;
         }
 
-        /* Main Content */
+        /* Main Content Grid */
         main {
             padding: 120px 4% 40px 4%;
         }
@@ -318,15 +283,14 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.75);
             color: #fff;
             padding: 4px 8px;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: bold;
             border-radius: 4px;
             text-transform: uppercase;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            z-index: 2;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .movie-title {
@@ -345,7 +309,7 @@
             grid-column: 1 / -1;
         }
 
-        /* Modal */
+        /* Video Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -369,9 +333,6 @@
             display: none;
             gap: 15px;
             z-index: 110;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: center;
         }
 
         .tv-controls select {
@@ -396,49 +357,10 @@
             box-shadow: 0 0 40px rgba(229, 9, 20, 0.25);
         }
 
-        .modal-top-bar {
-            width: 90%;
-            max-width: 1050px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .source-switcher {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .source-switcher span {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .source-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 6px 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.82rem;
-            transition: background 0.2s, border-color 0.2s;
-        }
-
-        .source-btn:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .source-btn.active {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
-
         .close-btn {
+            position: absolute;
+            top: -45px;
+            right: 0;
             color: white;
             font-size: 2.5rem;
             cursor: pointer;
@@ -469,7 +391,7 @@
                 <button class="settings-btn" id="settingsToggleBtn">⚙️ Settings</button>
                 <div class="settings-dropdown" id="settingsDropdown">
                     <div class="setting-item">
-                        <span class="setting-label">Block Adult Content</span>
+                        <span class="setting-label">Block Sexual Content</span>
                         <label class="switch">
                             <input type="checkbox" id="blockSexualToggle" checked>
                             <span class="slider"></span>
@@ -491,22 +413,14 @@
         <div class="loading-trigger" id="loadingTrigger">Loading more trending titles...</div>
     </main>
 
-    <!-- Player Modal -->
     <div class="modal" id="playerModal">
-        <div class="modal-top-bar">
-            <div class="tv-controls" id="tvControls">
-                <select id="seasonSelect"></select>
-                <select id="episodeSelect"></select>
-            </div>
-            <div class="source-switcher" id="sourceSwitcher">
-                <span>Source:</span>
-                <button class="source-btn active" data-source="0">Server 1</button>
-                <button class="source-btn" data-source="1">Server 2</button>
-                <button class="source-btn" data-source="2">Server 3</button>
-            </div>
+        <div class="tv-controls" id="tvControls">
+            <select id="seasonSelect"></select>
+            <select id="episodeSelect"></select>
+        </div>
+        <div class="modal-content">
             <button class="close-btn" id="closeBtn">&times;</button>
         </div>
-        <div class="modal-content" id="modalContent"></div>
     </div>
 
     <script>
@@ -514,57 +428,35 @@
         const BASE_URL = 'https://api.themoviedb.org/3';
         const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 
-        // ── Embed source providers ──────────────────────────────────────────
-        // Each entry has a movie() and tv() function returning the embed URL.
-        const SOURCES = [
-            {
-                name: 'Server 1',
-                movie: (id) => `https://vidsrc.xyz/embed/movie?tmdb=${id}`,
-                tv:    (id, s, e) => `https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${s}&episode=${e}`
-            },
-            {
-                name: 'Server 2',
-                movie: (id) => `https://embed.su/embed/movie/${id}`,
-                tv:    (id, s, e) => `https://embed.su/embed/tv/${id}/${s}/${e}`
-            },
-            {
-                name: 'Server 3',
-                movie: (id) => `https://vidsrc.to/embed/movie/${id}`,
-                tv:    (id, s, e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}`
-            }
-        ];
-
-        let activeSourceIndex = 0;
-        let currentMediaType = null; // 'movie' | 'tv'
-        let currentMediaId   = null;
-        let currentSeason    = 1;
-        let currentEpisode   = 1;
-
-        const movieGrid      = document.getElementById('movieGrid');
-        const searchBar      = document.getElementById('searchBar');
+        const movieGrid = document.getElementById('movieGrid');
+        const searchBar = document.getElementById('searchBar');
         const searchDropdown = document.getElementById('searchDropdown');
-        const sectionTitle   = document.getElementById('sectionTitle');
-        const logoBtn        = document.getElementById('logoBtn');
-        const playerModal    = document.getElementById('playerModal');
-        const modalContent   = document.getElementById('modalContent');
-        const closeBtn       = document.getElementById('closeBtn');
-        const settingsToggleBtn  = document.getElementById('settingsToggleBtn');
-        const settingsDropdown   = document.getElementById('settingsDropdown');
-        const blockSexualToggle  = document.getElementById('blockSexualToggle');
-        const tvControls         = document.getElementById('tvControls');
-        const seasonSelect       = document.getElementById('seasonSelect');
-        const episodeSelect      = document.getElementById('episodeSelect');
-        const sourceSwitcher     = document.getElementById('sourceSwitcher');
+        const sectionTitle = document.getElementById('sectionTitle');
+        const logoBtn = document.getElementById('logoBtn');
+        const playerModal = document.getElementById('playerModal');
+        const closeBtn = document.getElementById('closeBtn');
+        const modalContent = document.querySelector('.modal-content');
+        
+        const settingsToggleBtn = document.getElementById('settingsToggleBtn');
+        const settingsDropdown = document.getElementById('settingsDropdown');
+        const blockSexualToggle = document.getElementById('blockSexualToggle');
+        
+        const tvControls = document.getElementById('tvControls');
+        const seasonSelect = document.getElementById('seasonSelect');
+        const episodeSelect = document.getElementById('episodeSelect');
 
-        let videoPlayer    = null;
-        let currentPage    = 1;
-        let isFetching     = false;
-        let activeTvId     = null;
+        let videoPlayer = null; 
+        let currentPage = 1;
+        let isFetching = false;
+        let activeTvId = null;
         let tvShowDataCache = null;
-        let blockSexualContent = true;
+        
+        // Default internal tracker configuration flag
+        let blockSexualContent = true; 
+
+        // Blocklist keywords targeting adult/explicit strings
         const sexualKeywords = ['xxx', 'erotic', 'sensual', 'porn', 'sex', 'erotica'];
 
-        // ── Settings toggle ─────────────────────────────────────────────────
         settingsToggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             settingsDropdown.classList.toggle('active');
@@ -579,32 +471,8 @@
             if (!settingsDropdown.contains(e.target) && e.target !== settingsToggleBtn) {
                 settingsDropdown.classList.remove('active');
             }
-            if (!searchDropdown.contains(e.target) && e.target !== searchBar) {
-                searchDropdown.classList.remove('active');
-            }
         });
 
-        // ── Source switcher buttons ──────────────────────────────────────────
-        sourceSwitcher.querySelectorAll('.source-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                activeSourceIndex = parseInt(btn.dataset.source);
-                sourceSwitcher.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                // Reload current stream with new source
-                reloadCurrentStream();
-            });
-        });
-
-        function reloadCurrentStream() {
-            if (!currentMediaId) return;
-            if (currentMediaType === 'movie') {
-                buildIframe(SOURCES[activeSourceIndex].movie(currentMediaId));
-            } else {
-                buildIframe(SOURCES[activeSourceIndex].tv(currentMediaId, currentSeason, currentEpisode));
-            }
-        }
-
-        // ── Data loading ─────────────────────────────────────────────────────
         loadInitialData();
 
         function loadInitialData() {
@@ -613,84 +481,78 @@
             fetchMixedTrending();
         }
 
+        // Fetches combined movies and TV items simultaneously
         async function fetchMixedTrending() {
             if (isFetching) return;
             isFetching = true;
             document.getElementById('loadingTrigger').style.display = 'block';
 
-            let validItemsRendered = 0;
-            const maxAttempts = 5;
-            let attempts = 0;
+            // Uses combined trending API endpoint
+            let targetUrl = `${BASE_URL}/trending/all/week?api_key=${API_KEY}&page=${currentPage}`;
 
-            while (validItemsRendered === 0 && attempts < maxAttempts) {
-                const targetUrl = `${BASE_URL}/trending/all/week?api_key=${API_KEY}&page=${currentPage}`;
-                try {
-                    const res = await fetch(targetUrl);
-                    const data = await res.json();
-
-                    if (!data.results || data.results.length === 0) {
-                        document.getElementById('loadingTrigger').style.display = 'none';
-                        break;
-                    }
-
-                    validItemsRendered = await displayBrowsingGrid(data.results);
+            try {
+                const res = await fetch(targetUrl);
+                const data = await res.json();
+                
+                if (data.results && data.results.length > 0) {
+                    await displayBrowsingGrid(data.results);
                     currentPage++;
-                    attempts++;
-                } catch (error) {
-                    console.error('Trending fetch failure:', error);
-                    break;
+                } else {
+                    document.getElementById('loadingTrigger').style.display = 'none';
                 }
+            } catch (error) {
+                console.error("Trending fetch failure:", error);
+            } finally {
+                isFetching = false;
             }
-
-            isFetching = false;
-            document.getElementById('loadingTrigger').style.display = 'none';
         }
 
         async function displayBrowsingGrid(mediaItems) {
-            let renderedCount = 0;
-
             for (const item of mediaItems) {
                 const { id, poster_path, media_type, overview } = item;
-                const title = item.title || item.name;
+                const title = item.title || item.name; 
+                
+                // Drop items missing graphic path tags or people entities
+                if (!poster_path || media_type === 'person') continue; 
 
-                if (!poster_path || media_type === 'person') continue;
-
+                // Parental Controls Verification Layer
                 if (blockSexualContent) {
-                    const lowerTitle    = title.toLowerCase();
+                    const lowerTitle = title.toLowerCase();
                     const lowerOverview = overview ? overview.toLowerCase() : '';
-
-                    if (sexualKeywords.some(kw => lowerTitle.includes(kw) || lowerOverview.includes(kw))) continue;
+                    
+                    if (sexualKeywords.some(kw => lowerTitle.includes(kw) || lowerOverview.includes(kw))) {
+                        continue;
+                    }
 
                     try {
                         if (media_type === 'movie') {
-                            const detailRes  = await fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}&append_to_response=release_dates`);
+                            const detailRes = await fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}&append_to_response=release_dates`);
                             const detailData = await detailRes.json();
                             if (detailData.genres.some(g => g.name.toLowerCase() === 'adult')) continue;
 
                             const usRelease = detailData.release_dates.results.find(r => r.iso_3166_1 === 'US');
                             if (usRelease && usRelease.release_dates.length > 0) {
                                 const rating = usRelease.release_dates[0].certification.toUpperCase();
-                                if (['R', 'NC-17', 'NR', 'UR', ''].includes(rating)) continue;
+                                if (['R', 'NC-17', 'NR', 'UR', ''].includes(rating)) continue; 
                             } else {
                                 continue;
                             }
                         } else if (media_type === 'tv') {
-                            const detailRes  = await fetch(`${BASE_URL}/tv/${id}?api_key=${API_KEY}&append_to_response=content_ratings`);
+                            const detailRes = await fetch(`${BASE_URL}/tv/${id}?api_key=${API_KEY}&append_to_response=content_ratings`);
                             const detailData = await detailRes.json();
-                            const usRating   = detailData.content_ratings.results.find(r => r.iso_3166_1 === 'US');
+                            const usRating = detailData.content_ratings.results.find(r => r.iso_3166_1 === 'US');
                             if (usRating) {
                                 const rating = usRating.rating.toUpperCase();
                                 if (['TV-MA', 'R', 'NC-17', 'NR', ''].includes(rating)) continue;
                             } else {
-                                continue;
+                                continue; 
                             }
                         }
                     } catch (err) {
-                        continue;
+                        continue; 
                     }
                 }
 
-                renderedCount++;
                 const movieEl = document.createElement('div');
                 movieEl.classList.add('movie-card');
                 movieEl.innerHTML = `
@@ -703,10 +565,9 @@
                 movieEl.addEventListener('click', () => media_type === 'movie' ? openPlayer(id) : openTvPlayer(id));
                 movieGrid.appendChild(movieEl);
             }
-            return renderedCount;
         }
 
-        // ── Search ───────────────────────────────────────────────────────────
+        // Unified Autocomplete Multi-Search Router (Searches both collections at once)
         searchBar.addEventListener('input', async (e) => {
             const query = e.target.value.trim();
             if (!query) {
@@ -714,12 +575,13 @@
                 return;
             }
 
-            const searchUrl = `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&include_adult=false`;
+            // Calls multi-search endpoint to retrieve mixed results
+            const searchUrl = `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&include_adult=true`;
 
             try {
-                const res  = await fetch(searchUrl);
+                const res = await fetch(searchUrl);
                 const data = await res.json();
-
+                
                 if (data.results && data.results.length > 0) {
                     renderSearchDropdown(data.results);
                 } else {
@@ -727,7 +589,7 @@
                     searchDropdown.classList.add('active');
                 }
             } catch (err) {
-                console.error('Search error:', err);
+                console.error("Search failure:", err);
             }
         });
 
@@ -736,27 +598,32 @@
             let count = 0;
 
             for (const item of results) {
-                if (count >= 8) break;
-
+                if (count >= 8) break; // Display top 8 matches max
+                
                 const { id, poster_path, media_type, overview } = item;
                 if (media_type === 'person' || !poster_path) continue;
 
-                const title       = item.title || item.name;
+                const title = item.title || item.name;
                 const releaseDate = item.release_date || item.first_air_date || 'N/A';
-                const year        = releaseDate.split('-')[0];
+                const year = releaseDate.split('-')[0];
 
+                // Filter search results dynamically if toggle is checked
                 if (blockSexualContent) {
-                    const lowerTitle    = title.toLowerCase();
+                    const lowerTitle = title.toLowerCase();
                     const lowerOverview = overview ? overview.toLowerCase() : '';
-                    if (sexualKeywords.some(kw => lowerTitle.includes(kw) || lowerOverview.includes(kw))) continue;
+                    if (sexualKeywords.some(kw => lowerTitle.includes(kw) || lowerOverview.includes(kw))) {
+                        continue;
+                    }
                 }
 
-                const itemEl   = document.createElement('div');
+                const itemEl = document.createElement('div');
                 itemEl.classList.add('dropdown-item');
+                
+                const imgSrc = IMG_URL + poster_path;
                 const typeLabel = media_type === 'movie' ? 'MOVIE' : 'TV SHOW';
 
                 itemEl.innerHTML = `
-                    <img src="${IMG_URL + poster_path}" alt="${title}">
+                    <img src="${imgSrc}" alt="${title}">
                     <div class="dropdown-info">
                         <div class="dropdown-title">${title}</div>
                         <div class="dropdown-meta">${typeLabel} &bull; ${year}</div>
@@ -766,7 +633,11 @@
                 itemEl.addEventListener('click', () => {
                     searchDropdown.classList.remove('active');
                     searchBar.value = '';
-                    media_type === 'movie' ? openPlayer(id) : openTvPlayer(id);
+                    if (media_type === 'movie') {
+                        openPlayer(id);
+                    } else {
+                        openTvPlayer(id);
+                    }
                 });
 
                 searchDropdown.appendChild(itemEl);
@@ -774,93 +645,88 @@
             }
 
             if (searchDropdown.children.length === 0) {
-                searchDropdown.innerHTML = `<div class="dropdown-item" style="color:var(--text-muted);">No matches found</div>`;
+                searchDropdown.innerHTML = `<div class="dropdown-item" style="color:var(--text-muted);">Filtered / No matches found</div>`;
             }
             searchDropdown.classList.add('active');
         }
 
-        // ── Player ───────────────────────────────────────────────────────────
+        document.addEventListener('click', (e) => {
+            if (!searchDropdown.contains(e.target) && e.target !== searchBar) {
+                searchDropdown.classList.remove('active');
+            }
+        });
+
+        /* --- Player Engine --- */
         function openPlayer(tmdbId) {
-            currentMediaType = 'movie';
-            currentMediaId   = tmdbId;
             tvControls.style.display = 'none';
-            buildIframe(SOURCES[activeSourceIndex].movie(tmdbId));
+            buildIframe(`https://vidsrcme.ru/embed/movie/${tmdbId}`);
         }
 
         async function openTvPlayer(tvId) {
-            currentMediaType = 'tv';
-            currentMediaId   = tvId;
-            activeTvId       = tvId;
-            currentSeason    = 1;
-            currentEpisode   = 1;
-
+            activeTvId = tvId;
             tvControls.style.display = 'flex';
-
+            
             try {
-                const res      = await fetch(`${BASE_URL}/tv/${tvId}?api_key=${API_KEY}`);
+                const res = await fetch(`${BASE_URL}/tv/${tvId}?api_key=${API_KEY}`);
                 tvShowDataCache = await res.json();
-
+                
                 seasonSelect.innerHTML = '';
                 tvShowDataCache.seasons.forEach(s => {
-                    if (s.season_number === 0) return;
+                    if (s.season_number === 0) return; 
                     const opt = document.createElement('option');
-                    opt.value     = s.season_number;
+                    opt.value = s.season_number;
                     opt.innerText = s.name;
                     seasonSelect.appendChild(opt);
                 });
 
                 await updateEpisodesList(seasonSelect.value);
-                currentSeason  = parseInt(seasonSelect.value);
-                currentEpisode = 1;
-                buildIframe(SOURCES[activeSourceIndex].tv(activeTvId, currentSeason, currentEpisode));
+                loadTvEpisodeStream(seasonSelect.value, 1);
 
             } catch (err) {
-                console.error('TV player setup error:', err);
+                console.error("TV Metadata failed:", err);
             }
         }
 
         async function updateEpisodesList(seasonNum) {
             try {
-                const res  = await fetch(`${BASE_URL}/tv/${activeTvId}/season/${seasonNum}?api_key=${API_KEY}`);
+                const res = await fetch(`${BASE_URL}/tv/${activeTvId}/season/${seasonNum}?api_key=${API_KEY}`);
                 const data = await res.json();
-
+                
                 episodeSelect.innerHTML = '';
-                data.episodes.forEach(ep => {
+                data.episodes.forEach(e => {
                     const opt = document.createElement('option');
-                    opt.value     = ep.episode_number;
-                    opt.innerText = `Episode ${ep.episode_number}: ${ep.name}`;
+                    opt.value = e.episode_number;
+                    opt.innerText = `Episode ${e.episode_number}: ${e.name}`;
                     episodeSelect.appendChild(opt);
                 });
             } catch (err) {
-                console.error('Episode list error:', err);
+                console.error("Episode mapping dropped:", err);
             }
         }
 
+        function loadTvEpisodeStream(s, e) {
+            buildIframe(`https://vidsrcme.ru/embed/tv/${activeTvId}/${s}/${e}`);
+        }
+
         seasonSelect.addEventListener('change', async (e) => {
-            currentSeason  = parseInt(e.target.value);
-            currentEpisode = 1;
-            await updateEpisodesList(currentSeason);
-            buildIframe(SOURCES[activeSourceIndex].tv(activeTvId, currentSeason, currentEpisode));
+            await updateEpisodesList(e.target.value);
+            loadTvEpisodeStream(e.target.value, 1);
         });
 
         episodeSelect.addEventListener('change', (e) => {
-            currentEpisode = parseInt(e.target.value);
-            buildIframe(SOURCES[activeSourceIndex].tv(activeTvId, currentSeason, currentEpisode));
+            loadTvEpisodeStream(seasonSelect.value, e.target.value);
         });
 
         function buildIframe(url) {
-            if (videoPlayer) {
-                videoPlayer.src = '';
-                videoPlayer.remove();
-            }
+            if (videoPlayer) videoPlayer.remove();
 
             videoPlayer = document.createElement('iframe');
-            videoPlayer.setAttribute('allowfullscreen', 'true');
-            videoPlayer.setAttribute('referrerpolicy', 'origin');
-            videoPlayer.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
-            videoPlayer.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox');
+            videoPlayer.id = 'videoPlayer';
+            videoPlayer.setAttribute("allowfullscreen", "true");
+            videoPlayer.setAttribute("referrerpolicy", "origin");
+            videoPlayer.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-presentation");
             videoPlayer.src = url;
-
+            
             modalContent.appendChild(videoPlayer);
             playerModal.classList.add('active');
         }
@@ -868,16 +734,13 @@
         function closePlayer() {
             playerModal.classList.remove('active');
             if (videoPlayer) {
-                videoPlayer.src = '';
-                videoPlayer.remove();
+                videoPlayer.src = ''; 
+                videoPlayer.remove(); 
                 videoPlayer = null;
             }
             tvControls.style.display = 'none';
-            currentMediaId   = null;
-            currentMediaType = null;
         }
 
-        // ── Misc event listeners ─────────────────────────────────────────────
         logoBtn.addEventListener('click', () => {
             searchBar.value = '';
             searchDropdown.classList.remove('active');
