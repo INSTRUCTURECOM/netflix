@@ -310,75 +310,55 @@
             grid-column: 1 / -1;
         }
 
-        /* Video Modal Styles */
-        .modal {
+        /* Fixed Top Global Navigation Bar for TV Selectors */
+        .tv-selector-bar {
             display: none;
             position: fixed;
-            top: 0;
+            top: 80px;
             left: 0;
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
-            z-index: 100;
-            justify-content: center;
+            background-color: #1c1c1c;
+            border-bottom: 1px solid #282828;
+            padding: 10px 4%;
+            z-index: 8;
             align-items: center;
-            flex-direction: column;
             gap: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
 
-        .modal.active {
-            display: flex;
-        }
-
-        .tv-controls {
-            display: none;
-            gap: 15px;
-            z-index: 110;
-        }
-
-        .tv-controls select {
-            background: #222;
+        .tv-selector-bar select {
+            background: #2b2b2b;
             color: white;
             border: 1px solid #444;
-            padding: 8px 16px;
+            padding: 6px 12px;
             border-radius: 4px;
             outline: none;
             cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .tv-selector-bar .bar-title {
             font-size: 0.9rem;
-        }
-
-        .modal-content {
-            width: 90%;
-            max-width: 1050px;
-            aspect-ratio: 16/9;
-            position: relative;
-            background: #000;
-            border-radius: 4px;
-            overflow: hidden;
-            box-shadow: 0 0 40px rgba(229, 9, 20, 0.25);
-        }
-
-        .close-btn {
-            position: absolute;
-            top: -45px;
-            right: 0;
-            color: white;
-            font-size: 2.5rem;
-            cursor: pointer;
-            background: none;
-            border: none;
-            line-height: 1;
-            z-index: 110;
-        }
-
-        .close-btn:hover {
+            font-weight: bold;
             color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        iframe {
-            width: 100%;
-            height: 100%;
+        .tv-selector-bar .launch-ep-btn {
+            background-color: var(--primary);
+            color: white;
             border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .tv-selector-bar .launch-ep-btn:hover {
+            background-color: #b80710;
         }
     </style>
 </head>
@@ -408,21 +388,18 @@
         </div>
     </header>
 
+    <div class="tv-selector-bar" id="tvSelectorBar">
+        <span class="bar-title" id="activeTvTitle">TV Show Matrix</span>
+        <select id="seasonSelect"></select>
+        <select id="episodeSelect"></select>
+        <button class="launch-ep-btn" id="launchEpBtn">▶ Launch Stream</button>
+    </div>
+
     <main>
         <h2 id="sectionTitle">Trending Movies & TV Shows</h2>
         <div class="movie-grid" id="movieGrid"></div>
         <div class="loading-trigger" id="loadingTrigger">Loading more trending titles...</div>
     </main>
-
-    <div class="modal" id="playerModal">
-        <div class="tv-controls" id="tvControls">
-            <select id="seasonSelect"></select>
-            <select id="episodeSelect"></select>
-        </div>
-        <div class="modal-content">
-            <button class="close-btn" id="closeBtn">&times;</button>
-        </div>
-    </div>
 
     <script>
         const API_KEY = '86aa54fd6d8f15c6296d7e049fa62122';
@@ -434,23 +411,22 @@
         const searchDropdown = document.getElementById('searchDropdown');
         const sectionTitle = document.getElementById('sectionTitle');
         const logoBtn = document.getElementById('logoBtn');
-        const playerModal = document.getElementById('playerModal');
-        const closeBtn = document.getElementById('closeBtn');
-        const modalContent = document.querySelector('.modal-content');
         
         const settingsToggleBtn = document.getElementById('settingsToggleBtn');
         const settingsDropdown = document.getElementById('settingsDropdown');
         const blockSexualToggle = document.getElementById('blockSexualToggle');
         
-        const tvControls = document.getElementById('tvControls');
+        const tvSelectorBar = document.getElementById('tvSelectorBar');
+        const activeTvTitle = document.getElementById('activeTvTitle');
         const seasonSelect = document.getElementById('seasonSelect');
         const episodeSelect = document.getElementById('episodeSelect');
+        const launchEpBtn = document.getElementById('launchEpBtn');
 
-        let videoPlayer = null; 
         let currentPage = 1;
         let isFetching = false;
         let activeTvId = null;
         let tvShowDataCache = null;
+        let popupWindowRef = null; // Stores structural window handle references
         
         let blockSexualContent = true; 
         const sexualKeywords = ['xxx', 'erotic', 'sensual', 'porn', 'sex', 'erotica'];
@@ -476,6 +452,7 @@
         function loadInitialData() {
             currentPage = 1;
             movieGrid.innerHTML = '';
+            tvSelectorBar.style.display = 'none';
             fetchMixedTrending();
         }
 
@@ -569,7 +546,7 @@
                         <div class="movie-title">${title}</div>
                     </div>
                 `;
-                movieEl.addEventListener('click', () => media_type === 'movie' ? openPlayer(id) : openTvPlayer(id));
+                movieEl.addEventListener('click', () => media_type === 'movie' ? openMovieStream(id) : initTvSelector(id, title));
                 movieGrid.appendChild(movieEl);
             }
             return renderedCount;
@@ -639,9 +616,9 @@
                     searchDropdown.classList.remove('active');
                     searchBar.value = '';
                     if (media_type === 'movie') {
-                        openPlayer(id);
+                        openMovieStream(id);
                     } else {
-                        openTvPlayer(id);
+                        initTvSelector(id, title);
                     }
                 });
 
@@ -661,16 +638,34 @@
             }
         });
 
-        /* --- Updated vidsrc.to Path Parameter Systems --- */
-        function openPlayer(tmdbId) {
-            tvControls.style.display = 'none';
-            // FIXED: Using active path parameter structure for movies
-            buildIframe(`https://vidsrc.to/embed/movie/${tmdbId}`);
+        /* --- Updated Popup Window Window Positioning & Management Engine --- */
+        function launchPlayerPopup(url) {
+            // Screen geometry optimization metrics
+            const width = 1100;
+            const height = 620;
+            const left = (screen.width / 2) - (width / 2);
+            const top = (screen.height / 2) - (height / 2);
+            
+            const windowFeatures = `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no,status=no,toolbar=no,menubar=no`;
+            
+            // If window object exists and is open, target it or replace path seamlessly
+            if (popupWindowRef && !popupWindowRef.closed) {
+                popupWindowRef.location.href = url;
+                popupWindowRef.focus();
+            } else {
+                popupWindowRef = window.open(url, "NotflixPlayerStream", windowFeatures);
+            }
         }
 
-        async function openTvPlayer(tvId) {
+        function openMovieStream(tmdbId) {
+            tvSelectorBar.style.display = 'none';
+            launchPlayerPopup(`https://vidsrc.to/embed/movie/${tmdbId}`);
+        }
+
+        async function initTvSelector(tvId, tvTitle) {
             activeTvId = tvId;
-            tvControls.style.display = 'flex';
+            activeTvTitle.innerText = tvTitle;
+            tvSelectorBar.style.display = 'flex';
             
             try {
                 const res = await fetch(`${BASE_URL}/tv/${tvId}?api_key=${API_KEY}`);
@@ -686,7 +681,8 @@
                 });
 
                 await updateEpisodesList(seasonSelect.value);
-                loadTvEpisodeStream(seasonSelect.value, 1);
+                // Fire initial popup auto-launch context
+                triggerActiveTvRoute();
 
             } catch (err) {
                 console.error("TV Controls tracking dropped:", err);
@@ -710,48 +706,26 @@
             }
         }
 
-        function loadTvEpisodeStream(s, e) {
-            // FIXED: Using active path parameter structure for TV shows
-            buildIframe(`https://vidsrc.to/embed/tv/${activeTvId}/${s}/${e}`);
+        function triggerActiveTvRoute() {
+            const s = seasonSelect.value;
+            const e = episodeSelect.value || 1;
+            if (activeTvId && s) {
+                launchPlayerPopup(`https://vidsrc.to/embed/tv/${activeTvId}/${s}/${e}`);
+            }
         }
 
         seasonSelect.addEventListener('change', async (e) => {
             await updateEpisodesList(e.target.value);
-            loadTvEpisodeStream(e.target.value, 1);
+            triggerActiveTvRoute();
         });
 
-        episodeSelect.addEventListener('change', (e) => {
-            loadTvEpisodeStream(seasonSelect.value, e.target.value);
+        episodeSelect.addEventListener('change', () => {
+            triggerActiveTvRoute();
         });
 
-        function buildIframe(url) {
-            if (videoPlayer) videoPlayer.remove();
-
-            videoPlayer = document.createElement('iframe');
-            videoPlayer.id = 'videoPlayer';
-            
-            videoPlayer.style.width = '100%';
-            videoPlayer.style.height = '100%';
-            videoPlayer.setAttribute("frameborder", "0");
-            videoPlayer.setAttribute("allowfullscreen", "true");
-            
-            // Re-optimized sandbox permissions to satisfy vidsrc.to domain walls smoothly
-            videoPlayer.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-presentation");
-            videoPlayer.src = url;
-            
-            modalContent.appendChild(videoPlayer);
-            playerModal.classList.add('active');
-        }
-
-        function closePlayer() {
-            playerModal.classList.remove('active');
-            if (videoPlayer) {
-                videoPlayer.src = ''; 
-                videoPlayer.remove(); 
-                videoPlayer = null;
-            }
-            tvControls.style.display = 'none';
-        }
+        launchEpBtn.addEventListener('click', () => {
+            triggerActiveTvRoute();
+        });
 
         logoBtn.addEventListener('click', () => {
             searchBar.value = '';
@@ -765,11 +739,6 @@
             if (scrollTop + clientHeight >= scrollHeight - 300) {
                 fetchMixedTrending();
             }
-        });
-
-        closeBtn.addEventListener('click', closePlayer);
-        playerModal.addEventListener('click', (e) => {
-            if (e.target === playerModal) closePlayer();
         });
     </script>
 </body>
