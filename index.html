@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notflix - Stream Free Movies & TV</title>
@@ -360,9 +358,7 @@
         .tv-selector-bar .launch-ep-btn:hover {
             background-color: #b80710;
         }
-    </style>
-</head>
-<body>
+    </style></head><body>
 
     <header>
         <div class="nav-left">
@@ -426,7 +422,7 @@
         let isFetching = false;
         let activeTvId = null;
         let tvShowDataCache = null;
-        let popupWindowRef = null; // Stores structural window handle references
+        let popupWindowRef = null; 
         
         let blockSexualContent = true; 
         const sexualKeywords = ['xxx', 'erotic', 'sensual', 'porn', 'sex', 'erotica'];
@@ -638,9 +634,7 @@
             }
         });
 
-        /* --- Updated Popup Window Window Positioning & Management Engine --- */
         function launchPlayerPopup(url) {
-            // Screen geometry optimization metrics
             const width = 1100;
             const height = 620;
             const left = (screen.width / 2) - (width / 2);
@@ -648,7 +642,6 @@
             
             const windowFeatures = `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no,status=no,toolbar=no,menubar=no`;
             
-            // If window object exists and is open, target it or replace path seamlessly
             if (popupWindowRef && !popupWindowRef.closed) {
                 popupWindowRef.location.href = url;
                 popupWindowRef.focus();
@@ -681,7 +674,6 @@
                 });
 
                 await updateEpisodesList(seasonSelect.value);
-                // Fire initial popup auto-launch context
                 triggerActiveTvRoute();
 
             } catch (err) {
@@ -706,11 +698,10 @@
             }
         }
 
+        /* --- Updated TV Route to drop season and episode indicators --- */
         function triggerActiveTvRoute() {
-            const s = seasonSelect.value;
-            const e = episodeSelect.value || 1;
-            if (activeTvId && s) {
-                launchPlayerPopup(`https://vidsrc.to/embed/tv/${activeTvId}/${s}/${e}`);
+            if (activeTvId) {
+                launchPlayerPopup(`https://vidsrc.to/embed/tv/${activeTvId}`);
             }
         }
 
@@ -740,6 +731,4 @@
                 fetchMixedTrending();
             }
         });
-    </script>
-</body>
-</html>
+    </script></body></html>
