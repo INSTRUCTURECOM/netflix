@@ -27,7 +27,6 @@
             overflow-x: hidden;
         }
 
-        /* Navbar Layout */
         header {
             display: flex;
             justify-content: space-between;
@@ -56,7 +55,6 @@
             user-select: none;
         }
 
-        /* Settings Dropdown Button & Menu */
         .settings-container {
             position: relative;
         }
@@ -88,7 +86,7 @@
             border: 1px solid #333;
             border-radius: 6px;
             padding: 15px;
-            width: 260px;
+            width: 280px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.5);
             z-index: 20;
         }
@@ -101,11 +99,47 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .setting-item:last-child {
+            margin-bottom: 0;
         }
 
         .setting-label {
             font-size: 0.9rem;
             font-weight: 500;
+        }
+
+        .setting-label small {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        /* Source selector */
+        .source-select {
+            background: #222;
+            color: white;
+            border: 1px solid #444;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .source-select:focus {
+            border-color: var(--primary);
+        }
+
+        .source-row {
+            display: flex;
+            flex-direction: column;
         }
 
         /* Toggle Switches */
@@ -114,6 +148,7 @@
             display: inline-block;
             width: 44px;
             height: 24px;
+            flex-shrink: 0;
         }
 
         .switch input {
@@ -154,7 +189,7 @@
             transform: translateX(20px);
         }
 
-        /* Search Autocomplete */
+        /* Search */
         .search-container {
             position: relative;
             display: inline-block;
@@ -236,7 +271,7 @@
             margin-top: 2px;
         }
 
-        /* Main Content Grid */
+        /* Main Content */
         main {
             padding: 120px 4% 40px 4%;
         }
@@ -310,7 +345,7 @@
             grid-column: 1 / -1;
         }
 
-        /* Video Modal Styles */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -334,6 +369,9 @@
             display: none;
             gap: 15px;
             z-index: 110;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .tv-controls select {
@@ -358,10 +396,49 @@
             box-shadow: 0 0 40px rgba(229, 9, 20, 0.25);
         }
 
+        .modal-top-bar {
+            width: 90%;
+            max-width: 1050px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .source-switcher {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .source-switcher span {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .source-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .source-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .source-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
         .close-btn {
-            position: absolute;
-            top: -45px;
-            right: 0;
             color: white;
             font-size: 2.5rem;
             cursor: pointer;
@@ -414,14 +491,22 @@
         <div class="loading-trigger" id="loadingTrigger">Loading more trending titles...</div>
     </main>
 
+    <!-- Player Modal -->
     <div class="modal" id="playerModal">
-        <div class="tv-controls" id="tvControls">
-            <select id="seasonSelect"></select>
-            <select id="episodeSelect"></select>
-        </div>
-        <div class="modal-content">
+        <div class="modal-top-bar">
+            <div class="tv-controls" id="tvControls">
+                <select id="seasonSelect"></select>
+                <select id="episodeSelect"></select>
+            </div>
+            <div class="source-switcher" id="sourceSwitcher">
+                <span>Source:</span>
+                <button class="source-btn active" data-source="0">Server 1</button>
+                <button class="source-btn" data-source="1">Server 2</button>
+                <button class="source-btn" data-source="2">Server 3</button>
+            </div>
             <button class="close-btn" id="closeBtn">&times;</button>
         </div>
+        <div class="modal-content" id="modalContent"></div>
     </div>
 
     <script>
@@ -429,32 +514,57 @@
         const BASE_URL = 'https://api.themoviedb.org/3';
         const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 
-        const movieGrid = document.getElementById('movieGrid');
-        const searchBar = document.getElementById('searchBar');
-        const searchDropdown = document.getElementById('searchDropdown');
-        const sectionTitle = document.getElementById('sectionTitle');
-        const logoBtn = document.getElementById('logoBtn');
-        const playerModal = document.getElementById('playerModal');
-        const closeBtn = document.getElementById('closeBtn');
-        const modalContent = document.querySelector('.modal-content');
-        
-        const settingsToggleBtn = document.getElementById('settingsToggleBtn');
-        const settingsDropdown = document.getElementById('settingsDropdown');
-        const blockSexualToggle = document.getElementById('blockSexualToggle');
-        
-        const tvControls = document.getElementById('tvControls');
-        const seasonSelect = document.getElementById('seasonSelect');
-        const episodeSelect = document.getElementById('episodeSelect');
+        // ── Embed source providers ──────────────────────────────────────────
+        // Each entry has a movie() and tv() function returning the embed URL.
+        const SOURCES = [
+            {
+                name: 'Server 1',
+                movie: (id) => `https://vidsrc.xyz/embed/movie?tmdb=${id}`,
+                tv:    (id, s, e) => `https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${s}&episode=${e}`
+            },
+            {
+                name: 'Server 2',
+                movie: (id) => `https://embed.su/embed/movie/${id}`,
+                tv:    (id, s, e) => `https://embed.su/embed/tv/${id}/${s}/${e}`
+            },
+            {
+                name: 'Server 3',
+                movie: (id) => `https://vidsrc.to/embed/movie/${id}`,
+                tv:    (id, s, e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}`
+            }
+        ];
 
-        let videoPlayer = null; 
-        let currentPage = 1;
-        let isFetching = false;
-        let activeTvId = null;
+        let activeSourceIndex = 0;
+        let currentMediaType = null; // 'movie' | 'tv'
+        let currentMediaId   = null;
+        let currentSeason    = 1;
+        let currentEpisode   = 1;
+
+        const movieGrid      = document.getElementById('movieGrid');
+        const searchBar      = document.getElementById('searchBar');
+        const searchDropdown = document.getElementById('searchDropdown');
+        const sectionTitle   = document.getElementById('sectionTitle');
+        const logoBtn        = document.getElementById('logoBtn');
+        const playerModal    = document.getElementById('playerModal');
+        const modalContent   = document.getElementById('modalContent');
+        const closeBtn       = document.getElementById('closeBtn');
+        const settingsToggleBtn  = document.getElementById('settingsToggleBtn');
+        const settingsDropdown   = document.getElementById('settingsDropdown');
+        const blockSexualToggle  = document.getElementById('blockSexualToggle');
+        const tvControls         = document.getElementById('tvControls');
+        const seasonSelect       = document.getElementById('seasonSelect');
+        const episodeSelect      = document.getElementById('episodeSelect');
+        const sourceSwitcher     = document.getElementById('sourceSwitcher');
+
+        let videoPlayer    = null;
+        let currentPage    = 1;
+        let isFetching     = false;
+        let activeTvId     = null;
         let tvShowDataCache = null;
-        
-        let blockSexualContent = true; 
+        let blockSexualContent = true;
         const sexualKeywords = ['xxx', 'erotic', 'sensual', 'porn', 'sex', 'erotica'];
 
+        // ── Settings toggle ─────────────────────────────────────────────────
         settingsToggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             settingsDropdown.classList.toggle('active');
@@ -469,8 +579,32 @@
             if (!settingsDropdown.contains(e.target) && e.target !== settingsToggleBtn) {
                 settingsDropdown.classList.remove('active');
             }
+            if (!searchDropdown.contains(e.target) && e.target !== searchBar) {
+                searchDropdown.classList.remove('active');
+            }
         });
 
+        // ── Source switcher buttons ──────────────────────────────────────────
+        sourceSwitcher.querySelectorAll('.source-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                activeSourceIndex = parseInt(btn.dataset.source);
+                sourceSwitcher.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // Reload current stream with new source
+                reloadCurrentStream();
+            });
+        });
+
+        function reloadCurrentStream() {
+            if (!currentMediaId) return;
+            if (currentMediaType === 'movie') {
+                buildIframe(SOURCES[activeSourceIndex].movie(currentMediaId));
+            } else {
+                buildIframe(SOURCES[activeSourceIndex].tv(currentMediaId, currentSeason, currentEpisode));
+            }
+        }
+
+        // ── Data loading ─────────────────────────────────────────────────────
         loadInitialData();
 
         function loadInitialData() {
@@ -479,38 +613,35 @@
             fetchMixedTrending();
         }
 
-        // FIXED INFINITE SCROLL: Loops page requests automatically if a batch gets 100% filtered out
         async function fetchMixedTrending() {
             if (isFetching) return;
             isFetching = true;
             document.getElementById('loadingTrigger').style.display = 'block';
 
             let validItemsRendered = 0;
-            const maxAttempts = 5; // Prevents infinite API hanging if end of data is reached
+            const maxAttempts = 5;
             let attempts = 0;
 
             while (validItemsRendered === 0 && attempts < maxAttempts) {
-                let targetUrl = `${BASE_URL}/trending/all/week?api_key=${API_KEY}&page=${currentPage}`;
-                
+                const targetUrl = `${BASE_URL}/trending/all/week?api_key=${API_KEY}&page=${currentPage}`;
                 try {
                     const res = await fetch(targetUrl);
                     const data = await res.json();
-                    
+
                     if (!data.results || data.results.length === 0) {
                         document.getElementById('loadingTrigger').style.display = 'none';
                         break;
                     }
-                    
-                    // Count how many movies make it past your filter configuration rules
+
                     validItemsRendered = await displayBrowsingGrid(data.results);
-                    currentPage++; // Advance page tracker state
+                    currentPage++;
                     attempts++;
                 } catch (error) {
-                    console.error("Trending fetch failure:", error);
+                    console.error('Trending fetch failure:', error);
                     break;
                 }
             }
-            
+
             isFetching = false;
             document.getElementById('loadingTrigger').style.display = 'none';
         }
@@ -520,44 +651,42 @@
 
             for (const item of mediaItems) {
                 const { id, poster_path, media_type, overview } = item;
-                const title = item.title || item.name; 
-                
-                if (!poster_path || media_type === 'person') continue; 
+                const title = item.title || item.name;
+
+                if (!poster_path || media_type === 'person') continue;
 
                 if (blockSexualContent) {
-                    const lowerTitle = title.toLowerCase();
+                    const lowerTitle    = title.toLowerCase();
                     const lowerOverview = overview ? overview.toLowerCase() : '';
-                    
-                    if (sexualKeywords.some(kw => lowerTitle.includes(kw) || lowerOverview.includes(kw))) {
-                        continue;
-                    }
+
+                    if (sexualKeywords.some(kw => lowerTitle.includes(kw) || lowerOverview.includes(kw))) continue;
 
                     try {
                         if (media_type === 'movie') {
-                            const detailRes = await fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}&append_to_response=release_dates`);
+                            const detailRes  = await fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}&append_to_response=release_dates`);
                             const detailData = await detailRes.json();
                             if (detailData.genres.some(g => g.name.toLowerCase() === 'adult')) continue;
 
                             const usRelease = detailData.release_dates.results.find(r => r.iso_3166_1 === 'US');
                             if (usRelease && usRelease.release_dates.length > 0) {
                                 const rating = usRelease.release_dates[0].certification.toUpperCase();
-                                if (['R', 'NC-17', 'NR', 'UR', ''].includes(rating)) continue; 
+                                if (['R', 'NC-17', 'NR', 'UR', ''].includes(rating)) continue;
                             } else {
                                 continue;
                             }
                         } else if (media_type === 'tv') {
-                            const detailRes = await fetch(`${BASE_URL}/tv/${id}?api_key=${API_KEY}&append_to_response=content_ratings`);
+                            const detailRes  = await fetch(`${BASE_URL}/tv/${id}?api_key=${API_KEY}&append_to_response=content_ratings`);
                             const detailData = await detailRes.json();
-                            const usRating = detailData.content_ratings.results.find(r => r.iso_3166_1 === 'US');
+                            const usRating   = detailData.content_ratings.results.find(r => r.iso_3166_1 === 'US');
                             if (usRating) {
                                 const rating = usRating.rating.toUpperCase();
                                 if (['TV-MA', 'R', 'NC-17', 'NR', ''].includes(rating)) continue;
                             } else {
-                                continue; 
+                                continue;
                             }
                         }
                     } catch (err) {
-                        continue; 
+                        continue;
                     }
                 }
 
@@ -577,7 +706,7 @@
             return renderedCount;
         }
 
-        // Dropdown Search logic path
+        // ── Search ───────────────────────────────────────────────────────────
         searchBar.addEventListener('input', async (e) => {
             const query = e.target.value.trim();
             if (!query) {
@@ -585,12 +714,12 @@
                 return;
             }
 
-            const searchUrl = `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&include_adult=true`;
+            const searchUrl = `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&include_adult=false`;
 
             try {
-                const res = await fetch(searchUrl);
+                const res  = await fetch(searchUrl);
                 const data = await res.json();
-                
+
                 if (data.results && data.results.length > 0) {
                     renderSearchDropdown(data.results);
                 } else {
@@ -598,7 +727,7 @@
                     searchDropdown.classList.add('active');
                 }
             } catch (err) {
-                console.error("Search evaluation error:", err);
+                console.error('Search error:', err);
             }
         });
 
@@ -607,31 +736,27 @@
             let count = 0;
 
             for (const item of results) {
-                if (count >= 8) break; 
-                
+                if (count >= 8) break;
+
                 const { id, poster_path, media_type, overview } = item;
                 if (media_type === 'person' || !poster_path) continue;
 
-                const title = item.title || item.name;
+                const title       = item.title || item.name;
                 const releaseDate = item.release_date || item.first_air_date || 'N/A';
-                const year = releaseDate.split('-')[0];
+                const year        = releaseDate.split('-')[0];
 
                 if (blockSexualContent) {
-                    const lowerTitle = title.toLowerCase();
+                    const lowerTitle    = title.toLowerCase();
                     const lowerOverview = overview ? overview.toLowerCase() : '';
-                    if (sexualKeywords.some(kw => lowerTitle.includes(kw) || lowerOverview.includes(kw))) {
-                        continue;
-                    }
+                    if (sexualKeywords.some(kw => lowerTitle.includes(kw) || lowerOverview.includes(kw))) continue;
                 }
 
-                const itemEl = document.createElement('div');
+                const itemEl   = document.createElement('div');
                 itemEl.classList.add('dropdown-item');
-                
-                const imgSrc = IMG_URL + poster_path;
                 const typeLabel = media_type === 'movie' ? 'MOVIE' : 'TV SHOW';
 
                 itemEl.innerHTML = `
-                    <img src="${imgSrc}" alt="${title}">
+                    <img src="${IMG_URL + poster_path}" alt="${title}">
                     <div class="dropdown-info">
                         <div class="dropdown-title">${title}</div>
                         <div class="dropdown-meta">${typeLabel} &bull; ${year}</div>
@@ -641,11 +766,7 @@
                 itemEl.addEventListener('click', () => {
                     searchDropdown.classList.remove('active');
                     searchBar.value = '';
-                    if (media_type === 'movie') {
-                        openPlayer(id);
-                    } else {
-                        openTvPlayer(id);
-                    }
+                    media_type === 'movie' ? openPlayer(id) : openTvPlayer(id);
                 });
 
                 searchDropdown.appendChild(itemEl);
@@ -653,88 +774,93 @@
             }
 
             if (searchDropdown.children.length === 0) {
-                searchDropdown.innerHTML = `<div class="dropdown-item" style="color:var(--text-muted);">Filtered / No matches found</div>`;
+                searchDropdown.innerHTML = `<div class="dropdown-item" style="color:var(--text-muted);">No matches found</div>`;
             }
             searchDropdown.classList.add('active');
         }
 
-        document.addEventListener('click', (e) => {
-            if (!searchDropdown.contains(e.target) && e.target !== searchBar) {
-                searchDropdown.classList.remove('active');
-            }
-        });
-
-        /* --- Player Engine --- */
+        // ── Player ───────────────────────────────────────────────────────────
         function openPlayer(tmdbId) {
+            currentMediaType = 'movie';
+            currentMediaId   = tmdbId;
             tvControls.style.display = 'none';
-            buildIframe(`https://vidsrcme.ru/embed/movie/${tmdbId}`);
+            buildIframe(SOURCES[activeSourceIndex].movie(tmdbId));
         }
 
         async function openTvPlayer(tvId) {
-            activeTvId = tvId;
+            currentMediaType = 'tv';
+            currentMediaId   = tvId;
+            activeTvId       = tvId;
+            currentSeason    = 1;
+            currentEpisode   = 1;
+
             tvControls.style.display = 'flex';
-            
+
             try {
-                const res = await fetch(`${BASE_URL}/tv/${tvId}?api_key=${API_KEY}`);
+                const res      = await fetch(`${BASE_URL}/tv/${tvId}?api_key=${API_KEY}`);
                 tvShowDataCache = await res.json();
-                
+
                 seasonSelect.innerHTML = '';
                 tvShowDataCache.seasons.forEach(s => {
-                    if (s.season_number === 0) return; 
+                    if (s.season_number === 0) return;
                     const opt = document.createElement('option');
-                    opt.value = s.season_number;
+                    opt.value     = s.season_number;
                     opt.innerText = s.name;
                     seasonSelect.appendChild(opt);
                 });
 
                 await updateEpisodesList(seasonSelect.value);
-                loadTvEpisodeStream(seasonSelect.value, 1);
+                currentSeason  = parseInt(seasonSelect.value);
+                currentEpisode = 1;
+                buildIframe(SOURCES[activeSourceIndex].tv(activeTvId, currentSeason, currentEpisode));
 
             } catch (err) {
-                console.error("TV Controls rendering tracking dropped:", err);
+                console.error('TV player setup error:', err);
             }
         }
 
         async function updateEpisodesList(seasonNum) {
             try {
-                const res = await fetch(`${BASE_URL}/tv/${activeTvId}/season/${seasonNum}?api_key=${API_KEY}`);
+                const res  = await fetch(`${BASE_URL}/tv/${activeTvId}/season/${seasonNum}?api_key=${API_KEY}`);
                 const data = await res.json();
-                
+
                 episodeSelect.innerHTML = '';
-                data.episodes.forEach(e => {
+                data.episodes.forEach(ep => {
                     const opt = document.createElement('option');
-                    opt.value = e.episode_number;
-                    opt.innerText = `Episode ${e.episode_number}: ${e.name}`;
+                    opt.value     = ep.episode_number;
+                    opt.innerText = `Episode ${ep.episode_number}: ${ep.name}`;
                     episodeSelect.appendChild(opt);
                 });
             } catch (err) {
-                console.error("Episode lists compilation failure:", err);
+                console.error('Episode list error:', err);
             }
         }
 
-        function loadTvEpisodeStream(s, e) {
-            buildIframe(`https://vidsrcme.ru/embed/tv/${activeTvId}/${s}/${e}`);
-        }
-
         seasonSelect.addEventListener('change', async (e) => {
-            await updateEpisodesList(e.target.value);
-            loadTvEpisodeStream(e.target.value, 1);
+            currentSeason  = parseInt(e.target.value);
+            currentEpisode = 1;
+            await updateEpisodesList(currentSeason);
+            buildIframe(SOURCES[activeSourceIndex].tv(activeTvId, currentSeason, currentEpisode));
         });
 
         episodeSelect.addEventListener('change', (e) => {
-            loadTvEpisodeStream(seasonSelect.value, e.target.value);
+            currentEpisode = parseInt(e.target.value);
+            buildIframe(SOURCES[activeSourceIndex].tv(activeTvId, currentSeason, currentEpisode));
         });
 
         function buildIframe(url) {
-            if (videoPlayer) videoPlayer.remove();
+            if (videoPlayer) {
+                videoPlayer.src = '';
+                videoPlayer.remove();
+            }
 
             videoPlayer = document.createElement('iframe');
-            videoPlayer.id = 'videoPlayer';
-            videoPlayer.setAttribute("allowfullscreen", "true");
-            videoPlayer.setAttribute("referrerpolicy", "origin");
-            videoPlayer.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-presentation");
+            videoPlayer.setAttribute('allowfullscreen', 'true');
+            videoPlayer.setAttribute('referrerpolicy', 'origin');
+            videoPlayer.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
+            videoPlayer.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox');
             videoPlayer.src = url;
-            
+
             modalContent.appendChild(videoPlayer);
             playerModal.classList.add('active');
         }
@@ -742,13 +868,16 @@
         function closePlayer() {
             playerModal.classList.remove('active');
             if (videoPlayer) {
-                videoPlayer.src = ''; 
-                videoPlayer.remove(); 
+                videoPlayer.src = '';
+                videoPlayer.remove();
                 videoPlayer = null;
             }
             tvControls.style.display = 'none';
+            currentMediaId   = null;
+            currentMediaType = null;
         }
 
+        // ── Misc event listeners ─────────────────────────────────────────────
         logoBtn.addEventListener('click', () => {
             searchBar.value = '';
             searchDropdown.classList.remove('active');
